@@ -4,10 +4,12 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var pg = require('pg');
 
 var routes = require('./routes/index');
 var users = require('./routes/events');
 
+var conString = "postgres://username:password@localhost/database";
 var app = express();
 
 // view engine setup
@@ -53,6 +55,20 @@ app.use(function(err, req, res, next) {
   res.render('error', {
     message: err.message,
     error: {}
+  });
+});
+
+//Postgresql driver
+pg.connect(conString, function(err, client, done) {
+  if (err) {
+    return console.error('error fetching client from pool', err);
+  }
+  client.query('SELECT $1::int AS number', ['1'], function(err, result) {
+    done();
+    if (err) {
+      return console.error('error running query', err);
+    }
+    console.log(result.rows[0].number);
   });
 });
 
